@@ -1,0 +1,41 @@
+#include "MainWindows.h"
+#include <QVBoxLayout>
+
+/*
+ *Implement aero snap based on https://github.com/dfct/TrueFramelessWindow
+*/
+
+MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
+    setWindowFlag(Qt::FramelessWindowHint);
+    setGeometry(0, 0, 500, 300);
+
+    QWidget * Widget = new QWidget(this);
+    Widget->setGeometry(0, 0, 500,300);
+    Widget->setWindowFlag(Qt::FramelessWindowHint);
+    Widget->setStyleSheet("background-color : #000000");
+
+    QWidget * TitleBar = new QWidget(Widget);
+    TitleBar->setGeometry(0, 0, 500,26);
+    TitleBar->setWindowFlag(Qt::FramelessWindowHint);
+    TitleBar->setStyleSheet("background-color : #111111");
+
+    QWidget * Body = new QWidget(Widget);
+    Body->setGeometry(0, 26, 500,300-26);
+    Body->setWindowFlag(Qt::FramelessWindowHint);
+    Body->setStyleSheet("background-color : #222222");
+
+    QVBoxLayout * VLayout = new QVBoxLayout;
+    VLayout->addWidget(TitleBar);
+    VLayout->addWidget(Body);
+
+
+
+
+    setCentralWidget(Widget);
+
+}
+
+MainWindow::~MainWindow(){
+
+}
+
