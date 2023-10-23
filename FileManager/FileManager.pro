@@ -10,13 +10,15 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
-    MainWindows.cpp
+    MainWindow.cpp
 
 HEADERS += \
-    MainWindows.h
-
+    MainWindow.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    Ressources.qrc
