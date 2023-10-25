@@ -8,7 +8,7 @@
 
 //Implement Aero snap
 //Implement borders resizing
-//Unified Icons format of title bar, use website https://icons8.com/icons
+//Use CSS file to disign MainWindow and aspecially Qmenus
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
     setWindowFlag(Qt::FramelessWindowHint);
@@ -21,6 +21,38 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
     VLayout = new QVBoxLayout(CentralWidget);
     CentralWidget->setLayout(VLayout);
 
+    XPos = 0;
+    YPos = 0;
+
+    windowWidth = size().width();
+    windowHeight = size().height();
+
+    primaryScreenWidth = qApp->primaryScreen()->size().width();
+    primaryScreenHeight = qApp->primaryScreen()->size().height();
+
+    setTitleBar();
+    setMenuBar();
+    setStatusBar();
+
+    VLayout->addWidget(TitleBar);
+    VLayout->setSpacing(0);
+    VLayout->addWidget(MenuBar);
+    VLayout->addStretch();
+    VLayout->addWidget(StatusBar);
+    VLayout->setContentsMargins(0, 0, 0, 0);
+
+
+    connect(Minimize, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
+    connect(Maximize, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
+    connect(Close, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
+
+}
+
+MainWindow::~MainWindow(){
+
+}
+
+void MainWindow::setTitleBar(){
     Icon = new QLabel;
     Icon->setPixmap(QPixmap(":/Ressources/Images/Diamond.png"));
     Icon->setContentsMargins(5, 0, 0, 0);
@@ -32,17 +64,17 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
     Minimize = new QPushButton;
     Minimize->resize(27,27);
     Minimize->setIcon(QIcon(":/Ressources/Images/Minimize-white.png"));
-    //Minimize->setFlat(1);
+    Minimize->setFlat(1);
 
     Maximize = new QPushButton;
     Maximize->resize(27,27);
     Maximize->setIcon(QIcon(":/Ressources/Images/Maximize-white.png"));
-    //Maximize->setFlat(1);
+    Maximize->setFlat(1);
 
     Close = new QPushButton;
     Close->resize(27,27);
     Close->setIcon(QIcon(":/Ressources/Images/Close-white.png"));
-    //Close->setFlat(1);
+    Close->setFlat(1);
 
 
     TitleBar = new QWidget;
@@ -58,34 +90,55 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
     TitleBarLayout->addWidget(Maximize);
     TitleBarLayout->addWidget(Close);
     TitleBarLayout->setContentsMargins(0, 0, 0, 0);
-    TitleBarLayout->setSpacing(5);
-
-    VLayout->addWidget(TitleBar);
-    VLayout->addStretch();
-    VLayout->setContentsMargins(0, 0, 0, 0);
-
-
-    connect(Minimize, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
-    connect(Maximize, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
-    connect(Close, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
-
 }
 
-MainWindow::~MainWindow(){
+void MainWindow::setMenuBar(){
+    MenuBar = new QMenuBar();
+    MenuBar->setStyleSheet("Background-color : #181818");
+    MenuBar->setFixedHeight(21);
 
+    FileMenu = new QMenu("File");
+    NewAction = new QMenu("New...");
+    NewTerminal = new QAction("Terminal");
+    NewWindow = new QAction("Window");
+    LoadAction = new QMenu("Load...");
+    SaveAction = new QMenu("Save...");
+    Save = new QAction("Save");
+    SaveAs = new QAction("Save As");
+
+    FileMenu->addMenu(NewAction);
+    NewAction->addAction(NewTerminal);
+    NewAction->addAction(NewWindow);
+    FileMenu->addMenu(LoadAction);
+    FileMenu->addMenu(SaveAction);
+    SaveAction->addAction(Save);
+    SaveAction->addAction(SaveAs);
+
+    MenuBar->addMenu(FileMenu);
+}
+
+void MainWindow::setStatusBar(){
+    StatusBar = new QStatusBar();
+    StatusBar->setStyleSheet("Background-color : #181818");
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event){
     XPos = event->position().rx();
     YPos = event->position().ry();
-    std::cout << YPos << std::endl;
-
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event){
     if(YPos <=30){
         move(event->globalPosition().rx()-XPos,event->globalPosition().ry()-YPos);
     }
+    std::cout << "=================" << std::endl;
+    std::cout << XPos << std::endl;
+    std::cout << YPos << std::endl;
+    std::cout << event->globalPosition().rx() << std::endl;
+    std::cout << event->globalPosition().ry() << std::endl;
+    std::cout << event->globalPosition().rx()-XPos << std::endl;
+    std::cout << event->globalPosition().ry()-YPos << std::endl;
+    std::cout << "=================" << std::endl;
 }
 
 void MainWindow::onClicked(){

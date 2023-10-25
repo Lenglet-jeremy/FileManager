@@ -5,6 +5,8 @@
 #include <QBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QMenuBar>
+#include <QStatusBar>
 
 
 class MainWindow : public QMainWindow
@@ -15,8 +17,12 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-protected:
+    void setTitleBar();
+    void setMenuBar();
+    void setStatusBar();
 
+
+protected:
     virtual void mousePressEvent(QMouseEvent *event);
     virtual void mouseMoveEvent(QMouseEvent *event);
 
@@ -25,6 +31,16 @@ private slots:
     void onClicked();
 
 private:
+
+    int XPos;
+    int YPos;
+
+    int windowWidth;
+    int windowHeight;
+
+    int primaryScreenWidth;
+    int primaryScreenHeight;
+
     QWidget * CentralWidget;
     QVBoxLayout * VLayout;
 
@@ -36,8 +52,17 @@ private:
     QPushButton * Close;
     QHBoxLayout * TitleBarLayout;
 
-    int XPos;
-    int YPos;
+    QMenuBar * MenuBar;
+    QMenu * FileMenu;
+    QMenu * NewAction;
+    QAction * NewTerminal;
+    QAction * NewWindow;
+    QMenu * LoadAction;
+    QMenu * SaveAction;
+    QAction * Save;
+    QAction * SaveAs;
+
+    QStatusBar * StatusBar;
 
 };
 #endif // MAINWINDOW_H
