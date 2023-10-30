@@ -7,6 +7,7 @@
 #include <QPushButton>
 #include <QMenuBar>
 #include <QStatusBar>
+#include <QList>
 
 
 class MainWindow : public QMainWindow
@@ -23,8 +24,10 @@ public:
 
 
 protected:
-    virtual void mousePressEvent(QMouseEvent *event);
-    virtual void mouseMoveEvent(QMouseEvent *event);
+    virtual bool eventFilter(QObject *obj, QEvent *event);
+    virtual void mousePressEvent(QMouseEvent * event);
+    virtual void mouseMoveEvent(QMouseEvent * event);
+
 
 private slots:
 
@@ -40,6 +43,21 @@ private:
 
     int primaryScreenWidth;
     int primaryScreenHeight;
+
+    int globalXPosCursor;
+    int globalYPosCursor;
+
+    int topBorder;
+    int rightBorder;
+    int bottomBorder;
+    int leftBorder;
+
+    int topLeftCorner;
+    int topRightCorner;
+    int bottomRightCorner;
+    int bottomLeftCorner;
+
+    QRect * Screens;
 
     QWidget * CentralWidget;
     QVBoxLayout * VLayout;

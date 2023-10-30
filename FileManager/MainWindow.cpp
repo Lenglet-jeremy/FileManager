@@ -17,6 +17,10 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
 
     CentralWidget = new QWidget(this);
     setCentralWidget(CentralWidget);
+    CentralWidget->setAttribute(Qt::WA_TransparentForMouseEvents);
+    setMouseTracking(true);
+    installEventFilter(this);
+    std::cout << CentralWidget->width() << std::endl;
 
     VLayout = new QVBoxLayout(CentralWidget);
     CentralWidget->setLayout(VLayout);
@@ -29,6 +33,14 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
 
     primaryScreenWidth = qApp->primaryScreen()->size().width();
     primaryScreenHeight = qApp->primaryScreen()->size().height();
+    /*
+    qDebug() << "*** Qt screens ***";
+    const auto screens = qApp->screens();
+    for (int ii = 0; ii < qApp->screens().count(); ++ii) {
+        qDebug() << ii + 1 << qApp->screens()[ii]->geometry();
+        qDebug() << ii + 1 << screens[ii]->geometry();
+    }
+    */
 
     setTitleBar();
     setMenuBar();
@@ -77,9 +89,9 @@ void MainWindow::setTitleBar(){
     Close->setFlat(1);
 
 
-    TitleBar = new QWidget;
+    TitleBar = new QWidget(this);
     TitleBar->setStyleSheet("Background-color : #101010");
-    TitleBar->setFixedHeight(30);
+    //TitleBar->setFixedHeight(30);
 
     TitleBarLayout = new QHBoxLayout(TitleBar);
     TitleBarLayout->addWidget(Icon);
@@ -95,7 +107,7 @@ void MainWindow::setTitleBar(){
 void MainWindow::setMenuBar(){
     MenuBar = new QMenuBar();
     MenuBar->setStyleSheet("Background-color : #181818");
-    MenuBar->setFixedHeight(21);
+    //MenuBar->setFixedHeight(23);
 
     FileMenu = new QMenu("File");
     NewAction = new QMenu("New...");
@@ -122,23 +134,68 @@ void MainWindow::setStatusBar(){
     StatusBar->setStyleSheet("Background-color : #181818");
 }
 
-void MainWindow::mousePressEvent(QMouseEvent *event){
-    XPos = event->position().rx();
-    YPos = event->position().ry();
+bool MainWindow::eventFilter(QObject *obj, QEvent *event){
+
+        // check mouse move event when mouse is moved on any object
+        if (event->type() == QEvent::MouseMove) {
+            QMouseEvent *pMouse = dynamic_cast<QMouseEvent *>(event);
+
+            if (pMouse) {
+
+                topBorder = geometry().y();
+                rightBorder = geometry().x() + geometry().width();
+                bottomBorder = geometry().y() + geometry().height();
+                leftBorder = geometry().x();
+
+                globalXPosCursor = pMouse->globalPosition().rx();
+                globalYPosCursor = pMouse->globalPosition().ry();
+
+                if (globalYPosCursor > topBorder && globalYPosCursor < topBorder + 10){
+                    setCursor(Qt::SizeVerCursor);
+                }
+                else if (globalXPosCursor > rightBorder - 10 && globalXPosCursor <= rightBorder) { // Changer le curseur lorsque le pointeur est proche de la bordure
+                    setCursor(Qt::SizeHorCursor);
+                }
+                else {
+                    unsetCursor(); // Rétablir le curseur par défaut
+                }
+
+                /*
+                std::cout << "=====Window position=====" << std::endl;
+                std::cout << geometry().x() << std::endl;
+                std::cout << geometry().y() << std::endl;
+                std::cout << "=====Cursor position on Window=====" << std::endl;
+                std::cout << XPos << std::endl;
+                std::cout << YPos << std::endl;
+                std::cout << "=====Cursor position=====" << std::endl;
+                std::cout << event->globalPosition().rx() << std::endl;
+                std::cout << event->globalPosition().ry() << std::endl;
+                std::cout << "=====Window position=====" << std::endl;
+                std::cout << event->globalPosition().rx()-XPos << std::endl;
+                std::cout << event->globalPosition().ry()-YPos << std::endl;
+                std::cout << "=================" << std::endl;
+                */
+            }
+        }
+    //https://doc.qt.io/qt-5/qobject.html#installEventFilter
+    //The eventFilter() function must return true if the event should be filtered,
+    //(i.e. stopped); otherwise it must return false.
+    return QWidget::eventFilter(obj, event);
 }
 
-void MainWindow::mouseMoveEvent(QMouseEvent *event){
+void MainWindow::mousePressEvent(QMouseEvent * event){
+    XPos = event->position().rx();
+    YPos = event->position().ry();
+
+    globalXPosCursor = event->globalPosition().rx();
+    globalYPosCursor = event->globalPosition().ry();
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent * event){
+    std::cout << "TRUE" << std::endl;
     if(YPos <=30){
-        move(event->globalPosition().rx()-XPos,event->globalPosition().ry()-YPos);
+        //move(event->globalPosition().rx()-XPos,event->globalPosition().ry()-YPos);
     }
-    std::cout << "=================" << std::endl;
-    std::cout << XPos << std::endl;
-    std::cout << YPos << std::endl;
-    std::cout << event->globalPosition().rx() << std::endl;
-    std::cout << event->globalPosition().ry() << std::endl;
-    std::cout << event->globalPosition().rx()-XPos << std::endl;
-    std::cout << event->globalPosition().ry()-YPos << std::endl;
-    std::cout << "=================" << std::endl;
 }
 
 void MainWindow::onClicked(){
