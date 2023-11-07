@@ -8,6 +8,7 @@
 #include <QMenuBar>
 #include <QStatusBar>
 #include <QList>
+#include <QTimer>
 
 
 class MainWindow : public QMainWindow
@@ -21,12 +22,14 @@ public:
     void setTitleBar();
     void setMenuBar();
     void setStatusBar();
+    void resizeWindow();
 
 
 protected:
     virtual bool eventFilter(QObject *obj, QEvent *event);
     virtual void mousePressEvent(QMouseEvent * event);
     virtual void mouseMoveEvent(QMouseEvent * event);
+    virtual void mouseReleaseEvent(QMouseEvent * event);
 
 
 private slots:
@@ -41,23 +44,28 @@ private:
     int windowWidth;
     int windowHeight;
 
-    int primaryScreenWidth;
-    int primaryScreenHeight;
-
     int globalXPosCursor;
     int globalYPosCursor;
 
-    int topBorder;
-    int rightBorder;
-    int bottomBorder;
-    int leftBorder;
+    int startTopBorder;
+    int startRightBorder;
+    int startBottomBorder;
+    int startLeftBorder;
 
-    int topLeftCorner;
-    int topRightCorner;
-    int bottomRightCorner;
-    int bottomLeftCorner;
+    int startXPosWindow;
+    int startYPosWindow;
+    int startWidthWindow;
+    int startHeightWindow;
 
-    QRect * Screens;
+    int currentTopBorder;
+    int currentRightBorder;
+    int currentBottomBorder;
+    int currentLeftBorder;
+
+    bool LeftButtonPressed;
+    bool RightButtonPressed;
+
+    QTimer * resizeTimer;
 
     QWidget * CentralWidget;
     QVBoxLayout * VLayout;

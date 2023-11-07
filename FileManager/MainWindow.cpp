@@ -6,22 +6,30 @@
 #include <QWindow>
 #include <iostream>
 
+#include <QApplication>
+
 //Implement Aero snap
 //Implement borders resizing
 //Use CSS file to disign MainWindow and especially Qmenus
+//See how to implement the high frequency border resizing
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
     setWindowFlag(Qt::FramelessWindowHint);
     setStyleSheet("Background-color : #000000");
     resize(500,300);
+    setMinimumSize(300,200);
+
 
     CentralWidget = new QWidget(this);
     setCentralWidget(CentralWidget);
-    CentralWidget->resize(500,300);
     CentralWidget->setMouseTracking(true);
     CentralWidget->installEventFilter(this);
     VLayout = new QVBoxLayout(CentralWidget);
     CentralWidget->setLayout(VLayout);
+
+    resizeTimer = new QTimer(this);
+    resizeTimer->setInterval(10);
+    connect(resizeTimer, &QTimer::timeout, this, &MainWindow::resizeWindow);
 
     XPos = 0;
     YPos = 0;
@@ -29,8 +37,9 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
     windowWidth = size().width();
     windowHeight = size().height();
 
-    primaryScreenWidth = qApp->primaryScreen()->size().width();
-    primaryScreenHeight = qApp->primaryScreen()->size().height();
+    LeftButtonPressed = false;
+    RightButtonPressed = false;
+
     /*
     qDebug() << "*** Qt screens ***";
     const auto screens = qApp->screens();
@@ -44,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
     setMenuBar();
     setStatusBar();
 
+
     VLayout->addWidget(TitleBar);
     VLayout->setSpacing(0);
     VLayout->addWidget(MenuBar);
@@ -55,6 +65,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
     connect(Minimize, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
     connect(Maximize, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
     connect(Close, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
+
 
 }
 
@@ -148,6 +159,13 @@ void MainWindow::setStatusBar(){
     StatusBar->setStyleSheet("Background-color : #181818");
 }
 
+void MainWindow::resizeWindow() {
+    if (width() > minimumWidth() && height() > minimumHeight()){
+        setGeometry(globalXPosCursor, globalYPosCursor, startRightBorder - globalXPosCursor, startBottomBorder - globalYPosCursor);
+    }
+
+}
+
 bool MainWindow::eventFilter(QObject *obj, QEvent *event){
 
     // check mouse move event when mouse is moved on any object
@@ -156,43 +174,43 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event){
 
         if (pMouse) {
 
-            topBorder = geometry().y();
-            rightBorder = geometry().x() + geometry().width();
-            bottomBorder = geometry().y() + geometry().height();
-            leftBorder = geometry().x();
+            currentTopBorder = geometry().y();
+            currentRightBorder = geometry().x() + geometry().width();
+            currentBottomBorder = geometry().y() + geometry().height();
+            currentLeftBorder = geometry().x();
 
             globalXPosCursor = pMouse->globalPosition().rx();
             globalYPosCursor = pMouse->globalPosition().ry();
         }
 
 
-        if (globalYPosCursor > topBorder && globalYPosCursor < topBorder + 10 &&
-            globalXPosCursor > leftBorder && globalXPosCursor < leftBorder + 10) { // Changer le curseur lorsque le pointeur est proche de la bordure
+        if (globalYPosCursor > currentTopBorder && globalYPosCursor < currentTopBorder + 10 &&
+            globalXPosCursor > currentLeftBorder && globalXPosCursor < currentLeftBorder + 10) { // Changer le curseur lorsque le pointeur est proche de la bordure
             setCursor(Qt::SizeFDiagCursor);
         }
-        else if (globalYPosCursor > topBorder && globalYPosCursor < topBorder + 10 &&
-                 globalXPosCursor > rightBorder - 10 && globalXPosCursor <= rightBorder) { // Changer le curseur lorsque le pointeur est proche de la bordure
+        else if (globalYPosCursor > currentTopBorder && globalYPosCursor < currentTopBorder + 10 &&
+                 globalXPosCursor > currentRightBorder - 10 && globalXPosCursor <= currentRightBorder) { // Changer le curseur lorsque le pointeur est proche de la bordure
             setCursor(Qt::SizeBDiagCursor);
         }
-        else if (globalYPosCursor > bottomBorder - 10 && globalYPosCursor <= bottomBorder &&
-                 globalXPosCursor > leftBorder && globalXPosCursor < leftBorder + 10) { // Changer le curseur lorsque le pointeur est proche de la bordure
+        else if (globalYPosCursor > currentBottomBorder - 10 && globalYPosCursor <= currentBottomBorder &&
+                 globalXPosCursor > currentLeftBorder && globalXPosCursor < currentLeftBorder + 10) { // Changer le curseur lorsque le pointeur est proche de la bordure
             setCursor(Qt::SizeBDiagCursor);
         }
-        else if (globalYPosCursor > bottomBorder - 10 && globalYPosCursor <= bottomBorder &&
-                 globalXPosCursor > rightBorder - 10 && globalXPosCursor <= rightBorder) { // Changer le curseur lorsque le pointeur est proche de la bordure
+        else if (globalYPosCursor > currentBottomBorder - 10 && globalYPosCursor <= currentBottomBorder &&
+                 globalXPosCursor > currentRightBorder - 10 && globalXPosCursor <= currentRightBorder) { // Changer le curseur lorsque le pointeur est proche de la bordure
             setCursor(Qt::SizeFDiagCursor);
         }
 
-        else if (globalYPosCursor > topBorder && globalYPosCursor < topBorder + 10){
+        else if (globalYPosCursor >= currentTopBorder && globalYPosCursor <= currentTopBorder + 0){
             setCursor(Qt::SizeVerCursor);
         }
-        else if (globalXPosCursor > rightBorder - 10 && globalXPosCursor <= rightBorder) { // Changer le curseur lorsque le pointeur est proche de la bordure
+        else if (globalXPosCursor > currentRightBorder - 10 && globalXPosCursor <= currentRightBorder) { // Changer le curseur lorsque le pointeur est proche de la bordure
             setCursor(Qt::SizeHorCursor);
         }
-        else if (globalYPosCursor > bottomBorder - 10 && globalYPosCursor <= bottomBorder) { // Changer le curseur lorsque le pointeur est proche de la bordure
+        else if (globalYPosCursor > currentBottomBorder - 10 && globalYPosCursor <= currentBottomBorder) { // Changer le curseur lorsque le pointeur est proche de la bordure
             setCursor(Qt::SizeVerCursor);
         }
-        else if (globalXPosCursor > leftBorder && globalXPosCursor < leftBorder + 10) { // Changer le curseur lorsque le pointeur est proche de la bordure
+        else if (globalXPosCursor > currentLeftBorder && globalXPosCursor < currentLeftBorder + 10) { // Changer le curseur lorsque le pointeur est proche de la bordure
             setCursor(Qt::SizeHorCursor);
         }
 
@@ -223,17 +241,41 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event){
 }
 
 void MainWindow::mousePressEvent(QMouseEvent * event){
-    XPos = event->position().rx();
-    YPos = event->position().ry();
-
-    globalXPosCursor = event->globalPosition().rx();
-    globalYPosCursor = event->globalPosition().ry();
+    if (Qt::LeftButton){
+        LeftButtonPressed = true;
+        XPos = event->position().rx();
+        YPos = event->position().ry();
+    }
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent * event){
-    if(YPos <=30){
+
+    if(XPos > Icon->width() &&
+       XPos < TitleBar->width() - Minimize->width() - Maximize->width() - Close->width() &&
+       YPos <=30){
         move(event->globalPosition().rx()-XPos,event->globalPosition().ry()-YPos);
     }
+
+    startTopBorder = geometry().y();
+    startRightBorder = geometry().x() + geometry().width();
+    startBottomBorder = geometry().y() + geometry().height();
+    startLeftBorder = geometry().x();
+
+    startXPosWindow = event->globalPosition().rx()-XPos;
+    startYPosWindow = event->globalPosition().ry()-YPos;
+    startWidthWindow = width();
+    startHeightWindow = height();
+
+    globalXPosCursor = event->globalPosition().rx();
+    globalYPosCursor = event->globalPosition().ry();
+
+    if (globalYPosCursor > startTopBorder && globalYPosCursor < startTopBorder + 10 &&
+        globalXPosCursor > startLeftBorder && globalXPosCursor < startLeftBorder + 10) {
+        if (!resizeTimer->isActive()) {
+            resizeTimer->start();
+        }
+    }
+
 }
 
 void MainWindow::onClicked(){
@@ -262,4 +304,8 @@ void MainWindow::onClicked(){
             pWindow->close();
         }
     }
+}void MainWindow::mouseReleaseEvent(QMouseEvent * event){
+    LeftButtonPressed = false;
+    RightButtonPressed = false;
+    resizeTimer->stop();
 }
