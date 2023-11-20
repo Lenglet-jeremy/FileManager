@@ -1,66 +1,47 @@
 #include "MainWindow.h"
 
-#include <QPushButton>
 #include <QMouseEvent>
-#include <QApplication>
-#include <QWindow>
+#include <QSizeGrip>
 #include <iostream>
-
-#include <QApplication>
-
-//Implement Aero snap
-//Implement borders resizing
-//Use CSS file to disign MainWindow and especially Qmenus
-//See how to implement the high frequency border resizing
+#include <QMenuBar>
+#include <QStatusBar>
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
     setWindowFlag(Qt::FramelessWindowHint);
-    setStyleSheet("Background-color : #000000");
-    resize(500,300);
-    setMinimumSize(300,200);
-
-
-    CentralWidget = new QWidget(this);
-    setCentralWidget(CentralWidget);
-    CentralWidget->setMouseTracking(true);
-    CentralWidget->installEventFilter(this);
-    VLayout = new QVBoxLayout(CentralWidget);
-    CentralWidget->setLayout(VLayout);
-
-    resizeTimer = new QTimer(this);
-    resizeTimer->setInterval(10);
-    connect(resizeTimer, &QTimer::timeout, this, &MainWindow::resizeWindow);
+    setMinimumSize(500,300);
 
     XPos = 0;
     YPos = 0;
 
-    windowWidth = size().width();
-    windowHeight = size().height();
+    onTopLeft = false;
+    onTopRight = false;
+    onBottomLeft = false;
+    onBottomRight = false;
+    onTop = false;
+    onRight = false;
+    onBottom = false;
+    onLeft = false;
 
-    LeftButtonPressed = false;
-    RightButtonPressed = false;
+    isPressed = false;
 
-    /*
-    qDebug() << "*** Qt screens ***";
-    const auto screens = qApp->screens();
-    for (int ii = 0; ii < qApp->screens().count(); ++ii) {
-        qDebug() << ii + 1 << qApp->screens()[ii]->geometry();
-        qDebug() << ii + 1 << screens[ii]->geometry();
-    }
-    */
+    CentralWidget = new QWidget(this);
+    CentralWidget->setStyleSheet("Background-color : #000000");
+    CentralWidget->setMouseTracking(true);
+    CentralWidget->installEventFilter(this);
+    setCentralWidget(CentralWidget);
+
 
     setTitleBar();
     setMenuBar();
     setStatusBar();
 
-
+    VLayout = new QVBoxLayout(CentralWidget);
     VLayout->addWidget(TitleBar);
     VLayout->setSpacing(0);
     VLayout->addWidget(MenuBar);
     VLayout->addStretch();
-    VLayout->addWidget(StatusBar);
     VLayout->setContentsMargins(0, 0, 0, 0);
-
+    VLayout->addWidget(StatusBar);
 
     connect(Minimize, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
     connect(Maximize, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
@@ -70,15 +51,15 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
 }
 
 MainWindow::~MainWindow(){
-
 }
 
 void MainWindow::setTitleBar(){
-    Icon = new QLabel;
+    Icon = new QLabel();
     Icon->setMouseTracking(true);
     Icon->installEventFilter(this);
     Icon->setPixmap(QPixmap(":/Ressources/Images/Diamond.png"));
     Icon->setContentsMargins(5, 0, 0, 0);
+
 
     Title = new QLabel;
     Title->setMouseTracking(true);
@@ -154,158 +135,158 @@ void MainWindow::setMenuBar(){
 
 void MainWindow::setStatusBar(){
     StatusBar = new QStatusBar(CentralWidget);
+    StatusBar->setStyleSheet("Background-color : #111111");
     StatusBar->setMouseTracking(true);
     StatusBar->installEventFilter(this);
-    StatusBar->setStyleSheet("Background-color : #181818");
+    StatusBar->setFixedHeight(25);
+
+    SizeGrip = new QSizeGrip(StatusBar);
+    SizeGrip->setCursor(Qt::SizeFDiagCursor);
+
+    StatusBar->addPermanentWidget(SizeGrip, 0);
 }
 
-void MainWindow::resizeWindow() {
-    if (width() > minimumWidth() && height() > minimumHeight()){
-        setGeometry(globalXPosCursor, globalYPosCursor, startRightBorder - globalXPosCursor, startBottomBorder - globalYPosCursor);
+void MainWindow::mousePressEvent(QMouseEvent * Event){
+    if (Event->button() == Qt::LeftButton) {
+        XPos = Event->pos().x();
+        YPos = Event->pos().y();
+
+        isPressed = true;
+
+        startTopBorder = geometry().y();
+        startRightBorder = geometry().x() + geometry().width();
+        startBottomBorder = geometry().y() + geometry().height();
+        startLeftBorder = geometry().x();
+    }
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent * Event){
+
+    if (onTopLeft && isPressed){
+        setGeometry(globalX, globalY, startRightBorder - globalX, startBottomBorder - globalY);
+    }
+    else if (onTopRight && isPressed){
+        setGeometry(startLeftBorder, globalY, globalX - startLeftBorder, startBottomBorder - globalY);
+    }
+    else if (onBottomLeft && isPressed){
+        setGeometry(globalX, startTopBorder, startRightBorder - globalX, globalY - startTopBorder);
     }
 
+
+    else if (onTop && isPressed){
+        setGeometry(startLeftBorder, globalY, width(), startBottomBorder - globalY);
+    }
+    else if (onRight && isPressed){
+        setGeometry(startLeftBorder, startTopBorder, globalX - startLeftBorder, height());
+    }
+    else if (onBottom && isPressed){
+        setGeometry(startLeftBorder, startTopBorder, width(), globalY - startTopBorder);
+    }
+    else if (onLeft && isPressed){
+        setGeometry(globalX, startTopBorder, startRightBorder - globalX, height());
+    }
+
+    else if(YPos <=30 && isPressed){
+        move(Event->globalPosition().x()-XPos,Event->globalPosition().y()-YPos);
+    }
 }
 
-bool MainWindow::eventFilter(QObject *obj, QEvent *event){
+void MainWindow::mouseReleaseEvent(QMouseEvent * Event){
+    isPressed = false;
+}
 
-    // check mouse move event when mouse is moved on any object
-    if (event->type() == QEvent::MouseMove) {
-        QMouseEvent *pMouse = dynamic_cast<QMouseEvent *>(event);
+bool MainWindow::eventFilter(QObject *Object, QEvent *Event){
 
-        if (pMouse) {
 
+    if (Event->type() == QEvent::MouseMove) {
+        QMouseEvent *pMouse = dynamic_cast<QMouseEvent *>(Event);
+        if (pMouse){
             currentTopBorder = geometry().y();
             currentRightBorder = geometry().x() + geometry().width();
             currentBottomBorder = geometry().y() + geometry().height();
             currentLeftBorder = geometry().x();
 
-            globalXPosCursor = pMouse->globalPosition().rx();
-            globalYPosCursor = pMouse->globalPosition().ry();
+            globalX = pMouse->globalPosition().x();
+            globalY = pMouse->globalPosition().y();
         }
 
-
-        if (globalYPosCursor > currentTopBorder && globalYPosCursor < currentTopBorder + 10 &&
-            globalXPosCursor > currentLeftBorder && globalXPosCursor < currentLeftBorder + 10) { // Changer le curseur lorsque le pointeur est proche de la bordure
+        if(globalY > currentTopBorder - 50 && globalY < currentTopBorder + 50 &&
+           globalX > currentLeftBorder - 50 && globalX < currentLeftBorder + 50){
+            onTopLeft = true;
             setCursor(Qt::SizeFDiagCursor);
         }
-        else if (globalYPosCursor > currentTopBorder && globalYPosCursor < currentTopBorder + 10 &&
-                 globalXPosCursor > currentRightBorder - 10 && globalXPosCursor <= currentRightBorder) { // Changer le curseur lorsque le pointeur est proche de la bordure
+        else if(globalY > currentTopBorder - 50 && globalY < currentTopBorder + 50 &&
+                globalX > currentRightBorder - 50 && globalX < currentRightBorder + 50){
+            onTopRight = true;
             setCursor(Qt::SizeBDiagCursor);
         }
-        else if (globalYPosCursor > currentBottomBorder - 10 && globalYPosCursor <= currentBottomBorder &&
-                 globalXPosCursor > currentLeftBorder && globalXPosCursor < currentLeftBorder + 10) { // Changer le curseur lorsque le pointeur est proche de la bordure
+        else if(globalY > currentBottomBorder - 50 && globalY < currentBottomBorder + 50 &&
+                globalX > currentLeftBorder - 50 && globalX < currentLeftBorder + 50){
+            onBottomLeft = true;
             setCursor(Qt::SizeBDiagCursor);
         }
-        else if (globalYPosCursor > currentBottomBorder - 10 && globalYPosCursor <= currentBottomBorder &&
-                 globalXPosCursor > currentRightBorder - 10 && globalXPosCursor <= currentRightBorder) { // Changer le curseur lorsque le pointeur est proche de la bordure
-            setCursor(Qt::SizeFDiagCursor);
-        }
 
-        else if (globalYPosCursor >= currentTopBorder && globalYPosCursor <= currentTopBorder + 0){
+        else if(globalY > currentTopBorder - 50 && globalY < currentTopBorder + 50){
+            onTop = true;
             setCursor(Qt::SizeVerCursor);
         }
-        else if (globalXPosCursor > currentRightBorder - 10 && globalXPosCursor <= currentRightBorder) { // Changer le curseur lorsque le pointeur est proche de la bordure
+        else if(globalX > currentRightBorder - 50 && globalX < currentRightBorder + 50){
+            onRight = true;
             setCursor(Qt::SizeHorCursor);
         }
-        else if (globalYPosCursor > currentBottomBorder - 10 && globalYPosCursor <= currentBottomBorder) { // Changer le curseur lorsque le pointeur est proche de la bordure
+        else if(globalY > currentBottomBorder - 50 && globalY < currentBottomBorder + 50){
+            onBottom = true;
             setCursor(Qt::SizeVerCursor);
         }
-        else if (globalXPosCursor > currentLeftBorder && globalXPosCursor < currentLeftBorder + 10) { // Changer le curseur lorsque le pointeur est proche de la bordure
+        else if(globalX > currentLeftBorder - 50 && globalX < currentLeftBorder + 50){
+            onLeft = true;
             setCursor(Qt::SizeHorCursor);
         }
 
-        else {
-            unsetCursor(); // Rétablir le curseur par défaut
+        else{
+            unsetCursor();
+            onTopLeft = false;
+            onTopRight = false;
+            onBottomLeft = false;
+            onBottomRight = false;
+            onTop = false;
+            onRight = false;
+            onBottom = false;
+            onLeft = false;
         }
-
-        /*
-        std::cout << "=====Window position=====" << std::endl;
-        std::cout << geometry().x() << std::endl;
-        std::cout << geometry().y() << std::endl;
-        std::cout << "=====Cursor position on Window=====" << std::endl;
-        std::cout << XPos << std::endl;
-        std::cout << YPos << std::endl;
-        std::cout << "=====Cursor position=====" << std::endl;
-        std::cout << event->globalPosition().rx() << std::endl;
-        std::cout << event->globalPosition().ry() << std::endl;
-        std::cout << "=====Window position=====" << std::endl;
-        std::cout << event->globalPosition().rx()-XPos << std::endl;
-        std::cout << event->globalPosition().ry()-YPos << std::endl;
-        std::cout << "=================" << std::endl;
-        */
     }
+
     //https://doc.qt.io/qt-5/qobject.html#installEventFilter
     //The eventFilter() function must return true if the event should be filtered,
     //(i.e. stopped); otherwise it must return false.
-    return QWidget::eventFilter(obj, event);
+    return QWidget::eventFilter(Object, Event);
 }
 
-void MainWindow::mousePressEvent(QMouseEvent * event){
-    if (Qt::LeftButton){
-        LeftButtonPressed = true;
-        XPos = event->position().rx();
-        YPos = event->position().ry();
-    }
-}
-
-void MainWindow::mouseMoveEvent(QMouseEvent * event){
-
-    if(XPos > Icon->width() &&
-       XPos < TitleBar->width() - Minimize->width() - Maximize->width() - Close->width() &&
-       YPos <=30){
-        move(event->globalPosition().rx()-XPos,event->globalPosition().ry()-YPos);
-    }
-
-    startTopBorder = geometry().y();
-    startRightBorder = geometry().x() + geometry().width();
-    startBottomBorder = geometry().y() + geometry().height();
-    startLeftBorder = geometry().x();
-
-    startXPosWindow = event->globalPosition().rx()-XPos;
-    startYPosWindow = event->globalPosition().ry()-YPos;
-    startWidthWindow = width();
-    startHeightWindow = height();
-
-    globalXPosCursor = event->globalPosition().rx();
-    globalYPosCursor = event->globalPosition().ry();
-
-    if (globalYPosCursor > startTopBorder && globalYPosCursor < startTopBorder + 10 &&
-        globalXPosCursor > startLeftBorder && globalXPosCursor < startLeftBorder + 10) {
-        if (!resizeTimer->isActive()) {
-            resizeTimer->start();
-        }
-    }
-
+void MainWindow::resizeEvent(QResizeEvent * Event){
+    Q_UNUSED(Event);
 }
 
 void MainWindow::onClicked(){
     QPushButton *pButton = qobject_cast<QPushButton *>(sender());
     QWidget *pWindow = this->window();
-    if (pWindow->isWindow())
-    {
-        if (pButton == Minimize)
-        {
+    if (pWindow->isWindow() &&
+        cursor() != Qt::SizeVerCursor && cursor() != Qt::SizeHorCursor &&
+        cursor() != Qt::SizeBDiagCursor && cursor() != Qt::SizeFDiagCursor){
+        if (pButton == Minimize){
             pWindow->showMinimized();
         }
-        else if (pButton == Maximize)
-        {
+        else if (pButton == Maximize){
             if(pWindow->isMaximized()){
                 pWindow->showNormal();
                 Maximize->setIcon(QIcon(":/Ressources/Images/Maximize-white.png"));
             }
-
             else{
                 pWindow->showMaximized();
                 Maximize->setIcon(QIcon(":/Ressources/Images/Restore-down-white.png"));
             }
         }
-        else if (pButton == Close)
-        {
+        else if (pButton == Close){
             pWindow->close();
         }
     }
-}void MainWindow::mouseReleaseEvent(QMouseEvent * event){
-    LeftButtonPressed = false;
-    RightButtonPressed = false;
-    resizeTimer->stop();
 }

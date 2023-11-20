@@ -2,14 +2,15 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QBoxLayout>
+#include <QVBoxLayout>
 #include <QLabel>
 #include <QPushButton>
-#include <QMenuBar>
-#include <QStatusBar>
-#include <QList>
+#include <QSizeGrip>
 #include <QTimer>
 
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
 {
@@ -22,15 +23,13 @@ public:
     void setTitleBar();
     void setMenuBar();
     void setStatusBar();
-    void resizeWindow();
 
-
-protected:
-    virtual bool eventFilter(QObject *obj, QEvent *event);
-    virtual void mousePressEvent(QMouseEvent * event);
-    virtual void mouseMoveEvent(QMouseEvent * event);
-    virtual void mouseReleaseEvent(QMouseEvent * event);
-
+protected :
+    void mousePressEvent(QMouseEvent *) override;
+    void mouseMoveEvent(QMouseEvent *) override;
+    void mouseReleaseEvent(QMouseEvent *) override;
+    bool eventFilter(QObject *object, QEvent *event) override;
+    void resizeEvent(QResizeEvent * Event) override;
 
 private slots:
 
@@ -41,34 +40,29 @@ private:
     int XPos;
     int YPos;
 
-    int windowWidth;
-    int windowHeight;
-
-    int globalXPosCursor;
-    int globalYPosCursor;
+    int globalX;
+    int globalY;
 
     int startTopBorder;
     int startRightBorder;
     int startBottomBorder;
     int startLeftBorder;
 
-    int startXPosWindow;
-    int startYPosWindow;
-    int startWidthWindow;
-    int startHeightWindow;
-
     int currentTopBorder;
     int currentRightBorder;
     int currentBottomBorder;
     int currentLeftBorder;
 
-    bool LeftButtonPressed;
-    bool RightButtonPressed;
+    bool onTopLeft;
+    bool onTopRight;
+    bool onBottomLeft;
+    bool onBottomRight;
+    bool onTop;
+    bool onRight;
+    bool onBottom;
+    bool onLeft;
 
-    QTimer * resizeTimer;
-
-    QWidget * CentralWidget;
-    QVBoxLayout * VLayout;
+    bool isPressed;
 
     QWidget * TitleBar;
     QLabel * Icon;
@@ -89,6 +83,12 @@ private:
     QAction * SaveAs;
 
     QStatusBar * StatusBar;
+    QSizeGrip * SizeGrip;
 
+
+    QWidget * CentralWidget;
+
+
+    QVBoxLayout * VLayout;
 };
 #endif // MAINWINDOW_H
