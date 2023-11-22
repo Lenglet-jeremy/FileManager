@@ -20,20 +20,23 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void varInitialize();
     void setTitleBar();
     void setMenuBar();
     void setStatusBar();
+    void setLayout();
 
 protected :
+    bool eventFilter(QObject *object, QEvent *event) override;
     void mousePressEvent(QMouseEvent *) override;
     void mouseMoveEvent(QMouseEvent *) override;
     void mouseReleaseEvent(QMouseEvent *) override;
-    bool eventFilter(QObject *object, QEvent *event) override;
     void resizeEvent(QResizeEvent * Event) override;
 
 private slots:
 
     void onClicked();
+
 
 private:
 
@@ -61,6 +64,15 @@ private:
     bool onRight;
     bool onBottom;
     bool onLeft;
+
+    bool topLeftGrabbed;
+    bool topRightGrabbed;
+    bool bottomLeftGrabbed;
+    bool bottomRightGrabbed;
+    bool topGrabbed;
+    bool rightGrabbed;
+    bool bottomGrabbed;
+    bool leftGrabbed;
 
     bool isPressed;
 

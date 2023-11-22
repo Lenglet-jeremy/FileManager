@@ -5,11 +5,31 @@
 #include <iostream>
 #include <QMenuBar>
 #include <QStatusBar>
+#include <QApplication>
+
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
     setWindowFlag(Qt::FramelessWindowHint);
     setMinimumSize(500,300);
 
+    varInitialize();
+    setTitleBar();
+    setMenuBar();
+    setStatusBar();
+    setLayout();
+
+    connect(Minimize, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
+    connect(Maximize, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
+    connect(Close, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
+
+
+}
+
+MainWindow::~MainWindow(){
+
+}
+
+void MainWindow::varInitialize(){
     XPos = 0;
     YPos = 0;
 
@@ -22,6 +42,15 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
     onBottom = false;
     onLeft = false;
 
+    topLeftGrabbed = false;
+    topRightGrabbed = false;
+    bottomLeftGrabbed = false;
+    bottomRightGrabbed = false;
+    topGrabbed = false;
+    rightGrabbed = false;
+    bottomGrabbed = false;
+    leftGrabbed = false;
+
     isPressed = false;
 
     CentralWidget = new QWidget(this);
@@ -29,28 +58,6 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
     CentralWidget->setMouseTracking(true);
     CentralWidget->installEventFilter(this);
     setCentralWidget(CentralWidget);
-
-
-    setTitleBar();
-    setMenuBar();
-    setStatusBar();
-
-    VLayout = new QVBoxLayout(CentralWidget);
-    VLayout->addWidget(TitleBar);
-    VLayout->setSpacing(0);
-    VLayout->addWidget(MenuBar);
-    VLayout->addStretch();
-    VLayout->setContentsMargins(0, 0, 0, 0);
-    VLayout->addWidget(StatusBar);
-
-    connect(Minimize, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
-    connect(Maximize, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
-    connect(Close, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
-
-
-}
-
-MainWindow::~MainWindow(){
 }
 
 void MainWindow::setTitleBar(){
@@ -146,57 +153,16 @@ void MainWindow::setStatusBar(){
     StatusBar->addPermanentWidget(SizeGrip, 0);
 }
 
-void MainWindow::mousePressEvent(QMouseEvent * Event){
-    if (Event->button() == Qt::LeftButton) {
-        XPos = Event->pos().x();
-        YPos = Event->pos().y();
-
-        isPressed = true;
-
-        startTopBorder = geometry().y();
-        startRightBorder = geometry().x() + geometry().width();
-        startBottomBorder = geometry().y() + geometry().height();
-        startLeftBorder = geometry().x();
-    }
+void MainWindow::setLayout(){
+    VLayout = new QVBoxLayout(CentralWidget);
+    VLayout->addWidget(TitleBar);
+    VLayout->setSpacing(0);
+    VLayout->addWidget(MenuBar);
+    VLayout->addStretch();
+    VLayout->setContentsMargins(0, 0, 0, 0);
+    VLayout->addWidget(StatusBar);
 }
-
-void MainWindow::mouseMoveEvent(QMouseEvent * Event){
-
-    if (onTopLeft && isPressed){
-        setGeometry(globalX, globalY, startRightBorder - globalX, startBottomBorder - globalY);
-    }
-    else if (onTopRight && isPressed){
-        setGeometry(startLeftBorder, globalY, globalX - startLeftBorder, startBottomBorder - globalY);
-    }
-    else if (onBottomLeft && isPressed){
-        setGeometry(globalX, startTopBorder, startRightBorder - globalX, globalY - startTopBorder);
-    }
-
-
-    else if (onTop && isPressed){
-        setGeometry(startLeftBorder, globalY, width(), startBottomBorder - globalY);
-    }
-    else if (onRight && isPressed){
-        setGeometry(startLeftBorder, startTopBorder, globalX - startLeftBorder, height());
-    }
-    else if (onBottom && isPressed){
-        setGeometry(startLeftBorder, startTopBorder, width(), globalY - startTopBorder);
-    }
-    else if (onLeft && isPressed){
-        setGeometry(globalX, startTopBorder, startRightBorder - globalX, height());
-    }
-
-    else if(YPos <=30 && isPressed){
-        move(Event->globalPosition().x()-XPos,Event->globalPosition().y()-YPos);
-    }
-}
-
-void MainWindow::mouseReleaseEvent(QMouseEvent * Event){
-    isPressed = false;
-}
-
 bool MainWindow::eventFilter(QObject *Object, QEvent *Event){
-
 
     if (Event->type() == QEvent::MouseMove) {
         QMouseEvent *pMouse = dynamic_cast<QMouseEvent *>(Event);
@@ -210,35 +176,36 @@ bool MainWindow::eventFilter(QObject *Object, QEvent *Event){
             globalY = pMouse->globalPosition().y();
         }
 
-        if(globalY > currentTopBorder - 50 && globalY < currentTopBorder + 50 &&
-           globalX > currentLeftBorder - 50 && globalX < currentLeftBorder + 50){
+        if(globalY > currentTopBorder - 5 && globalY < currentTopBorder + 5 &&
+            globalX > currentLeftBorder - 5 && globalX < currentLeftBorder + 5){
             onTopLeft = true;
             setCursor(Qt::SizeFDiagCursor);
         }
-        else if(globalY > currentTopBorder - 50 && globalY < currentTopBorder + 50 &&
-                globalX > currentRightBorder - 50 && globalX < currentRightBorder + 50){
+        else if(globalY > currentTopBorder - 5 && globalY < currentTopBorder + 5 &&
+                globalX > currentRightBorder - 5 && globalX < currentRightBorder + 5){
+            Close->setAttribute(Qt::WA_TransparentForMouseEvents);
             onTopRight = true;
             setCursor(Qt::SizeBDiagCursor);
         }
-        else if(globalY > currentBottomBorder - 50 && globalY < currentBottomBorder + 50 &&
-                globalX > currentLeftBorder - 50 && globalX < currentLeftBorder + 50){
+        else if(globalY > currentBottomBorder - 5 && globalY < currentBottomBorder + 5 &&
+                globalX > currentLeftBorder - 5 && globalX < currentLeftBorder + 5){
             onBottomLeft = true;
             setCursor(Qt::SizeBDiagCursor);
         }
 
-        else if(globalY > currentTopBorder - 50 && globalY < currentTopBorder + 50){
+        else if(globalY > currentTopBorder - 5 && globalY < currentTopBorder + 5){
             onTop = true;
             setCursor(Qt::SizeVerCursor);
         }
-        else if(globalX > currentRightBorder - 50 && globalX < currentRightBorder + 50){
+        else if(globalX > currentRightBorder - 5 && globalX < currentRightBorder + 5){
             onRight = true;
             setCursor(Qt::SizeHorCursor);
         }
-        else if(globalY > currentBottomBorder - 50 && globalY < currentBottomBorder + 50){
+        else if(globalY > currentBottomBorder - 5 && globalY < currentBottomBorder + 5){
             onBottom = true;
             setCursor(Qt::SizeVerCursor);
         }
-        else if(globalX > currentLeftBorder - 50 && globalX < currentLeftBorder + 50){
+        else if(globalX > currentLeftBorder - 5 && globalX < currentLeftBorder + 5){
             onLeft = true;
             setCursor(Qt::SizeHorCursor);
         }
@@ -260,6 +227,124 @@ bool MainWindow::eventFilter(QObject *Object, QEvent *Event){
     //The eventFilter() function must return true if the event should be filtered,
     //(i.e. stopped); otherwise it must return false.
     return QWidget::eventFilter(Object, Event);
+}
+
+void MainWindow::mousePressEvent(QMouseEvent * Event){
+    if (Event->button() == Qt::LeftButton) {
+        XPos = Event->pos().x();
+        YPos = Event->pos().y();
+
+        isPressed = true;
+
+        startTopBorder = geometry().y();
+        startRightBorder = geometry().x() + geometry().width();
+        startBottomBorder = geometry().y() + geometry().height();
+        startLeftBorder = geometry().x();
+
+        if (onTopLeft){
+            topLeftGrabbed = true;
+        }
+        else if (onTopRight){
+            topRightGrabbed = true;
+        }
+        else if (onBottomLeft){
+            bottomLeftGrabbed = true;
+        }
+
+
+        else if (onTop){
+            topGrabbed = true;
+        }
+        else if (onRight){
+            rightGrabbed = true;
+        }
+        else if (onBottom){
+            bottomGrabbed = true;
+        }
+        else if (onLeft){
+            leftGrabbed = true;
+        }
+    }
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent * Event){
+
+    if (topLeftGrabbed){
+        setGeometry(globalX, globalY, startRightBorder - globalX, startBottomBorder - globalY);
+        if (width() == minimumWidth())
+            setGeometry(startLeftBorder, globalY, width(), startBottomBorder - globalY);
+        if (height() == minimumHeight())
+            setGeometry(globalX, startTopBorder, startRightBorder - globalX, height());
+        if (width() == minimumWidth() && height() == minimumHeight())
+            setGeometry(startLeftBorder, startTopBorder, width(), height());
+    }
+
+    else if (topRightGrabbed){
+        setGeometry(startLeftBorder, globalY, globalX - startLeftBorder, startBottomBorder - globalY);
+        if (width() == minimumWidth())
+            setGeometry(startLeftBorder, globalY, width(), startBottomBorder - globalY);
+        if (height() == minimumHeight())
+            setGeometry(startLeftBorder, globalY, globalX - startLeftBorder, height());
+        if (width() == minimumWidth() && height() == minimumHeight())
+            setGeometry(startLeftBorder, startTopBorder, width(), height());
+    }
+
+    else if (bottomLeftGrabbed){
+        setGeometry(globalX, startTopBorder, startRightBorder - globalX, globalY - startTopBorder);
+        if (width() == minimumWidth())
+            setGeometry(startLeftBorder, startTopBorder, width(), globalY - startTopBorder);
+        if (height() == minimumHeight())
+            setGeometry(globalX, startTopBorder, startRightBorder - globalX, height());
+        if (width() == minimumWidth() && height() == minimumHeight())
+            setGeometry(startLeftBorder, startTopBorder, width(), height());
+    }
+
+
+    else if (topGrabbed){
+        if (height() == minimumHeight() && globalY > startTopBorder)
+            return;
+        setGeometry(startLeftBorder, globalY, width(), startBottomBorder - globalY);
+    }
+
+    else if (rightGrabbed){
+        setGeometry(startLeftBorder, startTopBorder, globalX - startLeftBorder, height());
+        if (width() == minimumWidth())
+            setGeometry(startLeftBorder, startTopBorder, width(), height());
+    }
+
+    else if (bottomGrabbed){
+        setGeometry(startLeftBorder, startTopBorder, width(), globalY - startTopBorder);
+        if (height() == minimumHeight())
+            setGeometry(startLeftBorder, startTopBorder, width(), height());
+    }
+
+    else if (leftGrabbed){
+        if (width() == minimumWidth() && globalX > startLeftBorder)
+            return;
+        setGeometry(globalX, startTopBorder, startRightBorder - globalX, height());
+    }
+
+    else if(YPos <=30 && isPressed){
+        move(Event->globalPosition().x()-XPos,Event->globalPosition().y()-YPos);
+    }
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent * Event){
+    Q_UNUSED(Event)
+    isPressed = false;
+
+
+    Close->setAttribute(Qt::WA_TransparentForMouseEvents, false);
+
+    topLeftGrabbed = false;
+    topRightGrabbed = false;
+    bottomLeftGrabbed = false;
+    bottomRightGrabbed = false;
+    topGrabbed = false;
+    rightGrabbed = false;
+    bottomGrabbed = false;
+    leftGrabbed = false;
+
 }
 
 void MainWindow::resizeEvent(QResizeEvent * Event){
