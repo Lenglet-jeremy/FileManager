@@ -7,6 +7,7 @@
 #include <QPushButton>
 #include <QSizeGrip>
 #include <QTimer>
+#include <QToolBar>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -23,8 +24,11 @@ public:
     void varInitialize();
     void setTitleBar();
     void setMenuBar();
+    void setToolBar();
     void setStatusBar();
-    void setLayout();
+    void setMainWindowLayout();
+    void setFolderTree();
+    void setBody();
 
 protected :
     bool eventFilter(QObject *object, QEvent *event) override;
@@ -76,6 +80,8 @@ private:
 
     bool isPressed;
 
+    QVBoxLayout * MainWindowLayout;
+
     QWidget * TitleBar;
     QLabel * Icon;
     QLabel * Title;
@@ -94,13 +100,20 @@ private:
     QAction * Save;
     QAction * SaveAs;
 
+    QHBoxLayout * CentralLayout;
+    QWidget * CentralWidget;
+
+    QToolBar * ToolBar;
+    QAction * Copy;
+
+    QVBoxLayout * FolderTreeLayout;
+    QWidget * FolderTree;
+
+    QVBoxLayout * BodyLayout;
+    QWidget * Body;
+
     QStatusBar * StatusBar;
     QSizeGrip * SizeGrip;
 
-
-    QWidget * CentralWidget;
-
-
-    QVBoxLayout * VLayout;
 };
 #endif // MAINWINDOW_H

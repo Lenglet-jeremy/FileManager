@@ -16,11 +16,8 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
     setTitleBar();
     setMenuBar();
     setToolBar();
-    setFolderTree();
-    setBody();
     setStatusBar();
-    setMainWindowLayout();
-
+    setLayout();
 
     connect(Minimize, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
     connect(Maximize, SIGNAL(clicked(bool)), this, SLOT(onClicked()));
@@ -170,27 +167,16 @@ void MainWindow::setStatusBar(){
     StatusBar->addPermanentWidget(SizeGrip, 0);
 }
 
-void MainWindow::setMainWindowLayout(){
-
-    MainWindowLayout = new QVBoxLayout(CentralWidget);
-    MainWindowLayout->addWidget(TitleBar);
-    MainWindowLayout->setSpacing(0);
-    MainWindowLayout->addWidget(MenuBar);
-    MainWindowLayout->addWidget(ToolBar);
-    MainWindowLayout->addStretch();
-    MainWindowLayout->setContentsMargins(0, 0, 0, 0);
-    MainWindowLayout->addWidget(StatusBar);
-
+void MainWindow::setLayout(){
+    VLayout = new QVBoxLayout(CentralWidget);
+    VLayout->addWidget(TitleBar);
+    VLayout->setSpacing(0);
+    VLayout->addWidget(MenuBar);
+    VLayout->addWidget(ToolBar);
+    VLayout->addStretch();
+    VLayout->setContentsMargins(0, 0, 0, 0);
+    VLayout->addWidget(StatusBar);
 }
-
-void MainWindow::setFolderTree(){
-    //FolderTree = new QWidget(CentralWidget);
-}
-
-void MainWindow::setBody(){
-    //Body = new QWidget(CentralWidget);
-}
-
 bool MainWindow::eventFilter(QObject *Object, QEvent *Event){
 
     if (Event->type() == QEvent::MouseMove) {
