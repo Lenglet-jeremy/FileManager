@@ -2,11 +2,11 @@
 
 #include <QMouseEvent>
 #include <QSizeGrip>
-#include <iostream>
 #include <QMenuBar>
 #include <QStatusBar>
 #include <QApplication>
 
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
     setWindowFlag(Qt::FramelessWindowHint);
@@ -170,25 +170,67 @@ void MainWindow::setStatusBar(){
     StatusBar->addPermanentWidget(SizeGrip, 0);
 }
 
+void MainWindow::setFolderTree(){
+
+    FolderTree = new QWidget(CentralWidget);
+    FolderTree->setStyleSheet("Border: 1px Solid #FFFFFF");
+
+    QLabel * Download = new QLabel("Download");
+    Download->setStyleSheet("Color : #FFFFFF");
+    Download->setFixedHeight(20);
+    std::cout << Download->geometry().x() << std::endl;
+
+    QLabel * Documents = new QLabel("Documents");
+    Documents->setStyleSheet("Color : #FFFFFF");
+    Documents->setFixedHeight(20);
+
+    QLabel * Images = new QLabel("Images");
+    Images->setStyleSheet("Color : #FFFFFF");
+    Images->setFixedHeight(20);
+
+    QLabel * Music = new QLabel("Music");
+    Music->setStyleSheet("Color : #FFFFFF");
+    Music->setFixedHeight(20);
+
+    QLabel * Videos = new QLabel("Videos");
+    Videos->setStyleSheet("Color : #FFFFFF");
+    Videos->setFixedHeight(20);
+
+
+    QLabel * ThisPC = new QLabel("ThisPC");
+    ThisPC->setStyleSheet("Color : #FFFFFF");
+    ThisPC->setFixedHeight(20);
+
+    FolderTreeLayout = new QVBoxLayout(FolderTree);
+    FolderTreeLayout->addWidget(Download);
+    FolderTreeLayout->addWidget(Documents);
+    FolderTreeLayout->addWidget(Images);
+    FolderTreeLayout->addWidget(Music);
+    FolderTreeLayout->addWidget(Videos);
+    FolderTreeLayout->addSpacing(20);
+    FolderTreeLayout->addWidget(ThisPC);
+    FolderTreeLayout->addStretch(1);
+}
+
+void MainWindow::setBody(){
+    Body = new QWidget(CentralWidget);
+}
+
 void MainWindow::setMainWindowLayout(){
+
+    CentralLayout = new QHBoxLayout();
+    CentralLayout->addWidget(FolderTree);
+    CentralLayout->addWidget(Body,1);
 
     MainWindowLayout = new QVBoxLayout(CentralWidget);
     MainWindowLayout->addWidget(TitleBar);
     MainWindowLayout->setSpacing(0);
     MainWindowLayout->addWidget(MenuBar);
     MainWindowLayout->addWidget(ToolBar);
-    MainWindowLayout->addStretch();
+    MainWindowLayout->addLayout(CentralLayout,1);
     MainWindowLayout->setContentsMargins(0, 0, 0, 0);
     MainWindowLayout->addWidget(StatusBar);
 
-}
-
-void MainWindow::setFolderTree(){
-    //FolderTree = new QWidget(CentralWidget);
-}
-
-void MainWindow::setBody(){
-    //Body = new QWidget(CentralWidget);
 }
 
 bool MainWindow::eventFilter(QObject *Object, QEvent *Event){

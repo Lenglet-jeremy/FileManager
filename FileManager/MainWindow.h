@@ -9,9 +9,6 @@
 #include <QTimer>
 #include <QToolBar>
 
-QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
-QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
 {
@@ -26,9 +23,9 @@ public:
     void setMenuBar();
     void setToolBar();
     void setStatusBar();
-    void setMainWindowLayout();
     void setFolderTree();
     void setBody();
+    void setMainWindowLayout();
 
 protected :
     bool eventFilter(QObject *object, QEvent *event) override;
@@ -109,7 +106,7 @@ private:
     QVBoxLayout * FolderTreeLayout;
     QWidget * FolderTree;
 
-    QVBoxLayout * BodyLayout;
+    QGridLayout * BodyLayout;
     QWidget * Body;
 
     QStatusBar * StatusBar;
