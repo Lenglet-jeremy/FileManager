@@ -12,6 +12,8 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent){
     setWindowFlag(Qt::FramelessWindowHint);
     setMinimumSize(800,500);
 
+
+
     varInitialize();
     setTitleBar();
     setMenuBar();
@@ -178,7 +180,6 @@ void MainWindow::setFolderTree(){
     QLabel * Download = new QLabel("Download");
     Download->setStyleSheet("Color : #FFFFFF");
     Download->setFixedHeight(20);
-    std::cout << Download->geometry().x() << std::endl;
 
     QLabel * Documents = new QLabel("Documents");
     Documents->setStyleSheet("Color : #FFFFFF");
