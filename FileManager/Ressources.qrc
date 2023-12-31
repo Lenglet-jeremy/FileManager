@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/Ressources">
+        <file>Images/Close-black.png</file>
+        <file>Images/Close-white.png</file>
+        <file>Images/Diamond.png</file>
+        <file>Images/Maximize-black.png</file>
+        <file>Images/Maximize-white.png</file>
+        <file>Images/Minimize-black.png</file>
+        <file>Images/Minimize-white.png</file>
+        <file>Images/Restore-down-black.png</file>
+        <file>Images/Restore-down-white.png</file>
+    </qresource>
+</RCC>
